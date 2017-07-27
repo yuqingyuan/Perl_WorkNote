@@ -6,7 +6,7 @@ $fileName = $fileName."/*";
 # store the name of file
 $storeName = "";
 # use hash to store
-%storeList;
+%storeList = {};
 # the path of files
 $filePath = "C:/CATDM/tmp/Divided/";
 # get number from file
@@ -15,7 +15,7 @@ sub getNumberOfBoms{
 
     foreach(@files){
         $numberOfBoms = 0;
-        $fileQuantity += 1;
+        
         open DATA,"<",$_ or die "open files failed";
         
 		$storeName = $_; 
