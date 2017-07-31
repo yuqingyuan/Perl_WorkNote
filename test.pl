@@ -3,7 +3,7 @@ use File::Copy;
 $fileName = $ARGV[1];
 $fileName = $fileName."/*";
 # percentage 1~9 equals 10%~90%
-$optionalValue = $ARGV[0];
+$optionalValue = $ARGV[0]/10;
 $numberOfArgv = @ARGV;
 # store the name of file
 $storeName = "";
@@ -14,12 +14,17 @@ $filePath = "C:/CATDM/tmp/Divided/";
 # detail folders' Path
 $detailPath = "C:/CATDM/tmp/Divided/";
 # the number of rows you want to divided
-$dividedSize = 3;
+$dividedSize = 10;
 # the number of folders needed to be divided by details
 $numberOfFolders = 0;
 # store folders number
 @numberOfFolder;
+# store the files needed to be compared
+@comparedFiles;
+# 
+$matchPercentage = 0;
 
+@uselessItem = "";
 if($numberOfArgv != 2){
 	print "you must insert two arguments\n example: perl xxx.pl optionalValue(1~9) FilePath\n";
 	exit 1;
@@ -28,6 +33,7 @@ if($numberOfArgv != 2){
 	#dividedByRows();
 	#selectByDetails();
 	dividedByValue();
+	storeTheUselessItem();
 }
 
 # get number from file
@@ -173,12 +179,12 @@ sub selectByDetails{
 
 # divide files by optionalValue
 sub dividedByValue{
-	@files = glob($fileName."/");
+	@files = glob($fileName);
 	# all files
-	$numberOfFiles = @files - 2;
+	$numberOfFiles = @files - 1;
 	$numberOfFolders = $numberOfFiles;
 	
-	#tmp code
+	#check out the folders which contain only one file
 	while($numberOfFolders != -1){
 		$filesCount = 0;
 		$tmp = $detailPath.$numberOfFolders."/*";
@@ -197,18 +203,111 @@ sub dividedByValue{
 		}
 		$numberOfFolders -= 1;
 	}
-
+	
+	$tmpString = "";
+	$tmpStirng_2 = "";
+	$mark_1 = "";
+	$mark_2 = "";
+	 
 	foreach(@numberOfFolder){
-		@file = glob($detailPath."$_");
-		foreach(@file){
+		@folder = glob($detailPath."$_");
+		foreach(@folder){
 			#open each folder and read files
-			
+			@files = glob($_."/*");
+			$count = @files;
+			for($flag = 0;$flag < $count;$flag += 1){
+				$tmpString = reverse($files[$flag]);
+				if($tmpString =~ /\//){
+					$tmpString = reverse($`);
+					if($tmpString =~ /.txt/){
+						$mark_1 = substr($`,0,4);
+					}
+				}
+				for($flag_2 = $flag + 1;$flag_2 < $count;$flag_2 += 1){
+					$tmpString_2 = reverse($files[$flag_2]);
+					if($tmpString_2 =~ /\//){
+						$tmpString_2 = reverse($`);
+						if($tmpString_2 =~ /.txt/){
+							$mark_2 = substr($`,0,4);
+						}
+					}
+					
+					if($mark_1 == $mark_2 && $files[$flag] ne $files[$flag_2]){
+						@array_1 = "";
+						@array_2 = "";
+						#start to compare detais here
+						open DATA_1,"<",$files[$flag] or die "open files failed";
+						
+						foreach(<DATA_1>){
+							chomp($_);
+							push(@array_1,$_);
+						}
+						
+						open DATA_2,"<",$files[$flag_2] or die "open files failed";
+						
+						foreach(<DATA_2>){
+							chomp($_);
+							push(@array_2,$_);
+						}
+						
+						$count_1 = @array_1;
+						$count_2 = @array_2;
+						
+						$loopCount = ($count_1 > $count_2)?$count_2:$count_1;
+						$loopCount_2 = 0;
+						if($count_1>$count_2){
+							$loopCount = $count_2;
+							$loopCount_2 = $count_1;
+						}else{
+							$loopCount = $count_1;
+							$loopCount_2 = $count_2;
+						}
+						
+						for($loop_1 = 0;$loop_1 < $loopCount;$loop_1 += 1){
+							for($loop_2 = 0;$loop_2 < $loopCount_2 ;$loop_2 += 1){
+								if($array_1[$loop_1] eq $array_2[$loop_2]){
+									if($array_1[$loop_1] ne ""&&$array_2[$loop_2] ne ""){
+										$matchPercentage += 1;
+									}
+								}
+							}
+						}
+						if($loopCount == $count_1){
+							$min = $matchPercentage/$count_1;
+							if($min>$optionalValue){
+								#print "$files[$flag]------$files[$flag_2]"."\n";
+								$tmp = $files[$flag_2];
+								push(@uselessItem,$tmp);
+							}
+						}else{
+							$min = $matchPercentage/$count_2;
+							if($min>$optionalValue){
+								#print "$files[$flag]------$files[$flag_2]"."\n";
+								$tmp = $files[$flag_2];
+								push(@uselessItem,$tmp);
+							}
+						}
+						
+						$matchPercentage = 0;
+						close DATA_1,DATA_2;
+					}
+					
+				}
+				
+			}
 		}
+	}
+}
+
+sub storeTheUselessItem{
+	removeRepeat(@uselessItem);
+}
+sub removeRepeat
+{
+	foreach(@uselessItem){
+		print "$_"."\n";
 	}
 	
 }
-
-
-
 
 
