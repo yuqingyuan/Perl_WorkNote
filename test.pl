@@ -21,7 +21,7 @@ $numberOfFolders = 0;
 @numberOfFolder;
 # store the files needed to be compared
 @comparedFiles;
-# 
+
 $matchPercentage = 0;
 
 @uselessItem = "";
@@ -29,11 +29,10 @@ if($numberOfArgv != 2){
 	print "you must insert two arguments\n example: perl xxx.pl optionalValue(1~9) FilePath\n";
 	exit 1;
 }else{
-	#getNumberOfBoms($fileName);
-	#dividedByRows();
-	#selectByDetails();
+	getNumberOfBoms($fileName);
+	dividedByRows();
 	dividedByValue();
-	storeTheUselessItem();
+	removeRepeat();
 }
 
 # get number from file
@@ -136,7 +135,7 @@ sub dividedByRows{
 		$fileCount += 1;
 		
 		foreach(@newList){
-			print "$_"."---------"."success\n";
+			#print "$_"."---------"."success\n";
 			
 			#remove files in newHash to new folder divided by count
 			move($_,$tmpPath);
@@ -154,32 +153,9 @@ sub dividedByRows{
 	$numberOfFolders = $count - 1;
 }
 
-sub selectByDetails{
-	#skip the folder catains only one file and store the files which needed to be compared into an Array
-	while($numberOfFolders != -1){
-		$filesCount = 0;
-		$tmp = $detailPath.$numberOfFolders."/*";
-		
-		@tmpFiles = glob($tmp);
-		
-		foreach(@tmpFiles){
-			$filesCount += 1;
-		}
-		
-		if($filesCount == 1){
-			#skip this folder
-		}else{
-			#mark folders' number
-			push(@numberOfFolder,$numberOfFolders);
-		}
-		$numberOfFolders -= 1;
-	}
-	
-}
-
 # divide files by optionalValue
 sub dividedByValue{
-	@files = glob($fileName);
+	@files = glob($filePath."/*");
 	# all files
 	$numberOfFiles = @files - 1;
 	$numberOfFolders = $numberOfFiles;
@@ -276,14 +252,14 @@ sub dividedByValue{
 							$min = $matchPercentage/$count_1;
 							if($min>$optionalValue){
 								#print "$files[$flag]------$files[$flag_2]"."\n";
-								$tmp = $files[$flag_2];
+								$tmp = $files[$flag];
 								push(@uselessItem,$tmp);
 							}
 						}else{
 							$min = $matchPercentage/$count_2;
 							if($min>$optionalValue){
 								#print "$files[$flag]------$files[$flag_2]"."\n";
-								$tmp = $files[$flag_2];
+								$tmp = $files[$flag];
 								push(@uselessItem,$tmp);
 							}
 						}
@@ -299,15 +275,19 @@ sub dividedByValue{
 	}
 }
 
-sub storeTheUselessItem{
-	removeRepeat(@uselessItem);
-}
-sub removeRepeat
-{
-	foreach(@uselessItem){
-		print "$_"."\n";
+#remove the repeat elements
+sub removeRepeat{
+	%saw;
+	@saw{ @uselessItem } = ( );
+	my @uniq_array = sort keys %saw;
+	
+	mkdir($filePath."IgnoreItem") or die "Create folder failed";
+	
+	foreach(@uniq_array){
+		move($_,$filePath."IgnoreItem");
 	}
 	
 }
+
 
 
