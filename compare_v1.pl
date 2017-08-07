@@ -1,8 +1,8 @@
 use WWW::Mechanize;
 use HTTP::Cookies;
 
-$userName = "acaiwo";
-$passWord = "Migration12!@";
+$userName = "xxxx";
+$passWord = "xxxx";
 
 $mech;
 
@@ -11,7 +11,7 @@ sub getLoginView{
 
 	$mech->credentials('acaiwo' => 'acaiwo');
 
-	$mech->get("http://yfjcmigprod.autoexpr.com/CAD/");
+	$mech->get("http://xxxx");
 	
 	$mech->get("menu.jsp");
 	
