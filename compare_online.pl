@@ -1,7 +1,7 @@
 use WWW::Mechanize;
 
 $userName = "acaiwo";
-$passWord = "Migration12!@";
+$passWord = "xxx";
 
 $mech = "";
 
